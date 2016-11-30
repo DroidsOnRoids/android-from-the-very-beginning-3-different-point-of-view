@@ -3,6 +3,7 @@ package pl.droidsonroids.wuot.customview;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.PointF;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
@@ -11,14 +12,17 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 public class DrawingView extends View {
 
-	private final ArrayList<PointF> points = new ArrayList<>();
+	private final LinkedList<LinkedList<PointF>> lines = new LinkedList<>();
 
 	private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private Path path = new Path();
 
-	public DrawingView(final Context context) {
+    public DrawingView(final Context context) {
 		this(context, null);
 	}
 
@@ -41,17 +45,30 @@ public class DrawingView extends View {
 		paint.setStyle(Paint.Style.STROKE);
 	}
 
-	@Override
-	public boolean onTouchEvent(final MotionEvent event) {
-		points.add(new PointF(event.getX(), event.getY()));
-		invalidate();
-		return true;
+    @Override
+    public boolean onTouchEvent(final MotionEvent event) {
+	    if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
+		    lines.addLast(new LinkedList<PointF>());
+	    }
+	    addPointToLastLine(event);
+	    invalidate();
+	    return true;
+    }
+
+	private void addPointToLastLine(MotionEvent event) {
+		lines.getLast().addLast(new PointF(event.getX(), event.getY()));
 	}
 
 	@Override
-	protected void onDraw(final Canvas canvas) {
-		for (PointF point : points) {
-			canvas.drawPoint(point.x, point.y, paint);
+    protected void onDraw(final Canvas canvas) {
+		for (LinkedList<PointF> line : lines) {
+			final PointF firstPoint = line.getFirst();
+			path.moveTo(firstPoint.x, firstPoint.y);
+			for (PointF point : line) {
+				path.lineTo(point.x, point.y);
+			}
 		}
-	}
+		canvas.drawPath(path, paint);
+    }
+
 }
