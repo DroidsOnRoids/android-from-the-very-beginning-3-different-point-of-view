@@ -20,7 +20,7 @@ public class DrawingView extends View {
 	private final LinkedList<LinkedList<PointF>> lines = new LinkedList<>();
 
 	private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private Path path = new Path();
+    private final Path path = new Path();
 
     public DrawingView(final Context context) {
 		this(context, null);
@@ -37,10 +37,11 @@ public class DrawingView extends View {
 	public DrawingView(final Context context, final AttributeSet attrs, final int defStyleAttr, final int defStyleRes) {
 		super(context, attrs, defStyleAttr, defStyleRes);
 
-		paint.setStrokeCap(Paint.Cap.ROUND);
-		paint.setStrokeJoin(Paint.Join.ROUND);
 		final DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
 		final float widthPixels = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8.0f, displayMetrics);
+
+		paint.setStrokeCap(Paint.Cap.ROUND);
+		paint.setStrokeJoin(Paint.Join.ROUND);
 		paint.setStrokeWidth(widthPixels);
 		paint.setStyle(Paint.Style.STROKE);
 	}
