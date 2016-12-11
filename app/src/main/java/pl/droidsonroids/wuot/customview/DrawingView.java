@@ -1,6 +1,8 @@
 package pl.droidsonroids.wuot.customview;
 
+import android.annotation.TargetApi;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
@@ -11,16 +13,17 @@ import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.view.View;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
+
+import hugo.weaving.DebugLog;
 
 public class DrawingView extends View {
 
-	private final LinkedList<LinkedList<PointF>> lines = new LinkedList<>();
+	private final LinkedList<PointF> line = new LinkedList<>();
 
 	private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Path path = new Path();
+	private Bitmap cacheBitmap;
 
     public DrawingView(final Context context) {
 		this(context, null);
@@ -46,30 +49,45 @@ public class DrawingView extends View {
 		paint.setStyle(Paint.Style.STROKE);
 	}
 
-    @Override
+	@Override
+	@DebugLog
     public boolean onTouchEvent(final MotionEvent event) {
-	    if (event.getActionMasked() == MotionEvent.ACTION_DOWN) {
-		    lines.addLast(new LinkedList<PointF>());
-	    }
-	    addPointToLastLine(event);
-	    invalidate();
+	    if (event.getActionMasked() == MotionEvent.ACTION_UP) {
+
+			buildDrawingCache();
+			final Bitmap drawingCache = getDrawingCache();
+			cacheBitmap = drawingCache.copy(drawingCache.getConfig(),false);
+			destroyDrawingCache();
+			line.clear();
+	    } else {
+			addPointToLastLine(event);
+			invalidate();
+		}
+
 	    return true;
     }
 
 	private void addPointToLastLine(MotionEvent event) {
-		lines.getLast().addLast(new PointF(event.getX(), event.getY()));
+		line.add(new PointF(event.getX(), event.getY()));
 	}
 
 	@Override
-    protected void onDraw(final Canvas canvas) {
-		for (LinkedList<PointF> line : lines) {
+	@DebugLog
+
+	protected void onDraw(final Canvas canvas) {
+		if (cacheBitmap != null) {
+			canvas.drawBitmap(cacheBitmap, 0, 0, null);
+		}
+		if (line.size() > 1) {
+			path.reset();
 			final PointF firstPoint = line.getFirst();
 			path.moveTo(firstPoint.x, firstPoint.y);
 			for (PointF point : line) {
 				path.lineTo(point.x, point.y);
 			}
+			canvas.drawPath(path, paint);
+
 		}
-		canvas.drawPath(path, paint);
     }
 
 }
