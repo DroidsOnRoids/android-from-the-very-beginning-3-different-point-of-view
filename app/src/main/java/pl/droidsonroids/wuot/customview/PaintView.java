@@ -3,6 +3,7 @@ package pl.droidsonroids.wuot.customview;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
@@ -15,27 +16,29 @@ import android.view.View;
 
 import java.util.LinkedList;
 
-public class DrawingView extends View {
+public class PaintView extends View {
 
+	private boolean consume;
 	LinkedList<PointF> line = new LinkedList<>();
 
 	private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
 	private final Path path = new Path();
 	Bitmap cacheBitmap;
 
-	public DrawingView(final Context context) {
+	public PaintView(final Context context, boolean consume) {
 		this(context, null);
+		this.consume = consume;
 	}
 
-	public DrawingView(final Context context, final AttributeSet attrs) {
+	public PaintView(final Context context, final AttributeSet attrs) {
 		this(context, attrs, 0);
 	}
 
-	public DrawingView(final Context context, final AttributeSet attrs, final int defStyleAttr) {
+	public PaintView(final Context context, final AttributeSet attrs, final int defStyleAttr) {
 		this(context, attrs, defStyleAttr, 0);
 	}
 
-	public DrawingView(final Context context, final AttributeSet attrs, final int defStyleAttr, final int defStyleRes) {
+	public PaintView(final Context context, final AttributeSet attrs, final int defStyleAttr, final int defStyleRes) {
 		super(context, attrs, defStyleAttr, defStyleRes);
 
 		final DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
@@ -45,6 +48,8 @@ public class DrawingView extends View {
 		paint.setStrokeJoin(Paint.Join.ROUND);
 		paint.setStrokeWidth(widthPixels);
 		paint.setStyle(Paint.Style.STROKE);
+		if (consume)
+		paint.setColor(Color.RED);
 	}
 
 	@Override
@@ -61,7 +66,7 @@ public class DrawingView extends View {
 			invalidate();
 		}
 
-		return true;
+		return consume;
 	}
 
 	private void addPointToLastLine(MotionEvent event) {
@@ -81,7 +86,6 @@ public class DrawingView extends View {
 				path.lineTo(point.x, point.y);
 			}
 			canvas.drawPath(path, paint);
-
 		}
 	}
 
