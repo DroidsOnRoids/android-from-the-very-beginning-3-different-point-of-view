@@ -1,5 +1,4 @@
 apply plugin: 'com.android.application'
-apply plugin: 'com.jakewharton.hugo'
 android {
 	compileSdkVersion 24
 	buildToolsVersion "25.0.1"
@@ -7,5 +6,6 @@ android {
 		applicationId "pl.droidsonroids.wuot.customview"
 		minSdkVersion 21
 		targetSdkVersion 25
+		versionCode 0
 	}
 }

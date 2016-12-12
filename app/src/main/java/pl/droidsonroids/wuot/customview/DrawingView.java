@@ -1,12 +1,12 @@
 package pl.droidsonroids.wuot.customview;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PointF;
+import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
@@ -15,17 +15,15 @@ import android.view.View;
 
 import java.util.LinkedList;
 
-import hugo.weaving.DebugLog;
-
 public class DrawingView extends View {
 
-	private final LinkedList<PointF> line = new LinkedList<>();
+	LinkedList<PointF> line = new LinkedList<>();
 
 	private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final Path path = new Path();
-	private Bitmap cacheBitmap;
+	private final Path path = new Path();
+	Bitmap cacheBitmap;
 
-    public DrawingView(final Context context) {
+	public DrawingView(final Context context) {
 		this(context, null);
 	}
 
@@ -50,30 +48,27 @@ public class DrawingView extends View {
 	}
 
 	@Override
-	@DebugLog
-    public boolean onTouchEvent(final MotionEvent event) {
-	    if (event.getActionMasked() == MotionEvent.ACTION_UP) {
+	public boolean onTouchEvent(final MotionEvent event) {
+		if (event.getActionMasked() == MotionEvent.ACTION_UP) {
 
 			buildDrawingCache();
 			final Bitmap drawingCache = getDrawingCache();
-			cacheBitmap = drawingCache.copy(drawingCache.getConfig(),false);
+			cacheBitmap = drawingCache.copy(drawingCache.getConfig(), false);
 			destroyDrawingCache();
 			line.clear();
-	    } else {
+		} else {
 			addPointToLastLine(event);
 			invalidate();
 		}
 
-	    return true;
-    }
+		return true;
+	}
 
 	private void addPointToLastLine(MotionEvent event) {
 		line.add(new PointF(event.getX(), event.getY()));
 	}
 
 	@Override
-	@DebugLog
-
 	protected void onDraw(final Canvas canvas) {
 		if (cacheBitmap != null) {
 			canvas.drawBitmap(cacheBitmap, 0, 0, null);
@@ -88,6 +83,19 @@ public class DrawingView extends View {
 			canvas.drawPath(path, paint);
 
 		}
-    }
+	}
 
+	@Override
+	protected Parcelable onSaveInstanceState() {
+		return new SavedState(super.onSaveInstanceState(), cacheBitmap, line);
+	}
+
+	@Override
+	protected void onRestoreInstanceState(Parcelable state) {
+		super.onRestoreInstanceState(state);
+		SavedState savedState = (SavedState) state;
+		super.onRestoreInstanceState(savedState.getSuperState());
+		cacheBitmap = savedState.cacheBitmap;
+		line = savedState.line;
+	}
 }
